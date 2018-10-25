@@ -97,11 +97,14 @@ class GifCreator
 			if (is_resource($frames[$i])) { // Resource var
                 
                 $resourceImg = $frames[$i];
-                
+				
+				/*
                 ob_start();
                 imagegif($frames[$i]);
                 $this->frameSources[] = ob_get_contents();
-                ob_end_clean();
+				ob_end_clean();
+				*/
+				$this->frameSources[] = $this->Compress($frames[$i]);
                 
             } elseif (is_string($frames[$i])) { // File path or URL or Binary source code
 			     
@@ -110,12 +113,16 @@ class GifCreator
                     $frames[$i] = file_get_contents($frames[$i]);                    
                 }
                 
-                $resourceImg = imagecreatefromstring($frames[$i]);
                 
+				
+				/*
+				$resourceImg = imagecreatefromstring($frames[$i]);
                 ob_start();
                 imagegif($resourceImg);
                 $this->frameSources[] = ob_get_contents();
-                ob_end_clean();
+				ob_end_clean();
+				*/
+				$this->frameSources[] = $this->Compress($frames[$i]);
                  
 			} else { // Fail
                 
@@ -123,7 +130,7 @@ class GifCreator
 			}
             
             if ($i == 0) {
-                
+                $resourceImg = $this->Compress(imagecreatefromstring($frames[$i]));
                 $colour = imagecolortransparent($resourceImg);
             }
             
@@ -173,10 +180,47 @@ class GifCreator
 		}
         
 		$this->gifAddFooter();
-        
+		
+	
+
         return $this->gif;
 	}
-    
+	
+	public function Compress($fucking_gif){
+		$w=1200;
+		$h=1200;
+		$img = imagecreatefromstring($fucking_gif);
+		
+		$width = imagesx($img);
+		$height = imagesy($img);
+		$r = $width / $height;
+		if ($crop) {
+			if ($width > $height) {
+				$width = ceil($width-($width*abs($r-$w/$h)));
+			} else {
+				$height = ceil($height-($height*abs($r-$w/$h)));
+			}
+			$newwidth = $w;
+			$newheight = $h;
+		} else {
+			if ($w/$h > $r) {
+				$newwidth = $h*$r;
+				$newheight = $h;
+			} else {
+				$newheight = $w/$r;
+				$newwidth = $w;
+			}
+		}
+		$dst = imagecreatetruecolor($newwidth, $newheight);
+		imagecopyresampled($dst, $img, 0, 0, 0, 0, $newwidth,  $newheight, $width, $height);
+		imagetruecolortopalette($img, true, 32);  //  compress to 16 colors in gif palette (change 16 to anything between 1-256)
+		ob_start();
+		imagegif($dst); 
+		$aha = ob_get_contents();
+        ob_end_clean();
+		return $aha;
+	}
+
     // Internals
     // ===================================================================================
     
@@ -291,6 +335,7 @@ class GifCreator
 	public function gifAddFooter()
     {
 		$this->gif .= ';';
+		
 	}
     
 	/**

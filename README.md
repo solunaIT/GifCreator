@@ -2,7 +2,7 @@
 # GifCreator
 # ================================
 
-GifCreator is a PHP class to create animated GIF from multiple images
+GifCreator is a PHP class to create animated GIF from multiple images. Added compress and resize
 
 ### For what ?
 
@@ -59,8 +59,7 @@ file_put_contents('/myfolder/animated_picture.gif', $gifBinary);
 ### Behavior
 
 - The transparency is based on the first given frame. It will be saved only if you give multiple frames with same transparent background.
-- The dimensions of the generated GIF are based on the first frame. If you need to resize your frames to get the same dimension, you can use 
-this class: https://github.com/Sybio/ImageWorkshop
+- The dimensions of GIF is resized to max 1200x1200 (maintains ratio)
 
 ### About
 
